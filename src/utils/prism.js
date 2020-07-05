@@ -1,8 +1,8 @@
 import escapeHtml from "escape-html";
-import 'prismjs'
+// import 'prismjs'
 
 
-const Prism = window.Prism
+
 
 function wrap(code, lang, langPrism) {
   if (lang === "text") {
@@ -12,6 +12,7 @@ function wrap(code, lang, langPrism) {
 }
 
 export default (str, lang) => {
+  const Prism = window.Prism
   if (!lang) {
     return wrap(str, "text", "text");
   }
@@ -22,7 +23,7 @@ export default (str, lang) => {
     // window.dispatchEvent(myEvent)
     // console.log(Prism)
     const code = Prism.highlight(str, Prism.languages[lang], lang);
-    console.log(code)
+    // console.log(code)
     // Prism.highlightAll()
     // {highlightedCode}
     

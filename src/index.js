@@ -9,6 +9,7 @@ import { FORBIDDEN_KEYS } from "./utils/constant";
 import themes from './utils/themes'
 // import { languages } from 'prismjs';
 import languages from './utils/languages'
+import plugins from './utils/plugins'
 
 
 
@@ -22,16 +23,24 @@ Array.from(new Set(languages.map(item => item.value))).forEach(item => {
     languagesJs[item] = require(`!!raw-loader!prismjs/components/prism-${item}.js`).default
 })
 
+const pluginsJs = {}
+Array.from(new Set(plugins.map(item => item.value))).forEach(item => {
+    pluginsJs[item] = require(`!!raw-loader!prismjs/plugins/${item}/prism-${item}.js`).default
+})
+
+const prismJs = require(`!!raw-loader!prismjs/prism.js`).default
+
+
+
 
 class Editor extends React.Component {
     constructor(props) {
         super(props)
-        const { code, language } = props
         this.state = {
             lineNumbersHeight: '20px',
             selection: undefined,
-            codeData: code,
-            content: this.getContent(code, language)
+            codeData: '',
+            content: ''
         }
     }
 
@@ -219,13 +228,13 @@ class Editor extends React.Component {
         return prism(codeData || "", language);
     }
 
+
+
     componentDidMount() {
+        this.setPrismScrpit()
+        this.setPrismStyle(this.props)
         this.recordChange(this.getPlain());
         this.undoTimestamp = 0; // Reset timestamp
-        this.styleLineNumbers();
-        this.setLanguage(this.props.language)
-
-
         const $pre = this.pre;
         $pre.addEventListener("paste", this.onPaste);
 
@@ -256,34 +265,52 @@ class Editor extends React.Component {
         this.styleLineNumbers();
     }
 
-
-
-
-
     componentWillUnmount() {
         this.pre.removeEventListener("paste", this.onPaste);
     }
 
     componentWillUpdate(nextProps, nextState) {
         if (this.props.code !== nextProps.code || this.props.language !== nextProps.language) {
-            this.setLanguage(nextProps.language)
-            this.setState({
-                codeData: nextProps.code || '',
-                content: this.getContent(nextProps.code, nextProps.language)
-            }, () => this.styleLineNumbers())
+            this.setPrismStyle(nextProps)
         }
         if (this.props.theme !== nextProps.theme) {
             this.setState({}, this.styleLineNumbers)
         }
     }
 
-
-    setLanguage(language) {
-        if (!this.languageScript) {
-            this.languageScript = document.createElement('script')
-            document.body.appendChild(this.languageScript)
+    handleScript(name, jsString) {
+        const domName = `${name}ScriptDom`
+        if (!this[domName]) {
+            this[domName] = document.createElement('script')
+            document.body.appendChild(this[domName])
         }
-        this.languageScript.innerHTML = languagesJs[language]
+        this[domName].innerHTML = jsString
+    }
+
+    setPrismStyle(props) {
+        this.setLanguageScript(props.language)
+        this.setPluginsScript()
+
+        this.setState({
+            codeData: props.code || '',
+            content: this.getContent(props.code, props.language)
+        }, () => this.styleLineNumbers())
+
+    }
+
+    setPrismScrpit() {
+        this.handleScript('prism', prismJs)
+    }
+
+    setPluginsScript() {
+        Array.from(new Set(plugins.map(item => item.value))).forEach(item => {
+            this.handleScript(item, pluginsJs[item])
+        })
+    }
+
+
+    setLanguageScript(language) {
+        this.handleScript('language', languagesJs[language])
     }
 
     componentDidUpdate() {
@@ -394,11 +421,6 @@ class Editor extends React.Component {
                 text-align: right;
             }
             `}</style>
-            <script type="text/javascript">{`console.log('aaaa')`}</script>
-            <script dangerouslySetInnerHTML={{
-                __html: `debugger;
-            ${languagesJs[language]}`
-            }} />
         </div >
     }
 }

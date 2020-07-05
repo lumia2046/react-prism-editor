@@ -10,7 +10,7 @@ class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      language: 'json',
+      language: 'jsx',
       theme: 'default',
       lineNumber: true,
       readOnly: true,
