@@ -380,9 +380,11 @@ class Editor extends React.Component {
                 }
                 $lineNumbers.innerHTML = renderToString(reactLineNumbers)
                 $editor.style['height'] = $lineNumbers.offsetHeight +
-                    this.deletePx(editorStyles["padding-top"]) +
-                    this.deletePx(editorStyles["padding-bottom"])
-                    + 'px'
+                    // this.deletePx(editorStyles["padding-top"]) +
+                    // this.deletePx(editorStyles["padding-bottom"]) +
+                    // this.deletePx(editorStyles["border-top-width"]) +
+                    // this.deletePx(editorStyles["border-bottom-width"]) +
+                    'px'
             }
         }, 20);
 
@@ -405,8 +407,8 @@ class Editor extends React.Component {
             </div>} */}
             <pre
                 className={`language-${language} ${true ? 'line-numbers' : ''} ${clipboard ? 'copy-to-clipboard' : ''}`}
-                // style={{ paddingLeft: '3em' }}
                 ref={ref => this.pre = ref}
+                style={{ marginTop: 0 }}
                 dangerouslySetInnerHTML={{ __html: content }}
                 contentEditable={!readOnly}
                 onKeyDown={this.handleKeyDown.bind(this)}
@@ -420,9 +422,9 @@ class Editor extends React.Component {
             />
             <style key={theme}>{themesCss[theme]}</style>
             <style>{`
-            .module-prism-editor-container * {
-                box-sizing:border-box;
-            }
+            // .module-prism-editor-container * {
+            //     box-sizing:border-box;
+            // }
             pre[class*="language-"].line-numbers {
                 position: relative;
                 padding-left: 3.8em;
