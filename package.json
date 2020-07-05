@@ -1,6 +1,6 @@
 {
   "name": "react-prism-editor",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "react prism editor",
   "main": "lib/index.js",
   "files": [

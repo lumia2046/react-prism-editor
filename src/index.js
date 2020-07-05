@@ -1,4 +1,5 @@
 import React from 'react';
+import { renderToString } from 'react-dom/server';
 import prism from "./utils/prism";
 import escapeHtml from "escape-html";
 import normalizeHtml from "./utils/normalizeHtml.js";
@@ -10,6 +11,9 @@ import themes from './utils/themes'
 // import { languages } from 'prismjs';
 import languages from './utils/languages'
 import plugins from './utils/plugins'
+// import 'clipboard'
+// import 'prismjs/plugins/toolbar/prism-toolbar.css'
+// import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
 
 
 
@@ -24,8 +28,10 @@ Array.from(new Set(languages.map(item => item.value))).forEach(item => {
 })
 
 const pluginsJs = {}
+// const pluginsCss = []
 Array.from(new Set(plugins.map(item => item.value))).forEach(item => {
     pluginsJs[item] = require(`!!raw-loader!prismjs/plugins/${item}/prism-${item}.js`).default
+    // pluginsCss.push(require(`!!raw-loader!prismjs/plugins/${item}/prism-${item}.js`).default)
 })
 
 const prismJs = require(`!!raw-loader!prismjs/prism.js`).default
@@ -228,25 +234,6 @@ class Editor extends React.Component {
         return prism(codeData || "", language);
     }
 
-
-
-    componentDidMount() {
-        this.setPrismScrpit()
-        this.setPrismStyle(this.props)
-        this.recordChange(this.getPlain());
-        this.undoTimestamp = 0; // Reset timestamp
-        const $pre = this.pre;
-        $pre.addEventListener("paste", this.onPaste);
-
-        $pre.addEventListener("compositionstart", () => {
-            this.composing = true;
-        });
-        $pre.addEventListener("compositionend", () => {
-            // for canceling input.
-            this.composing = false;
-        });
-    }
-
     onPaste = e => {
         e.preventDefault();
         const currentCursorPos = selectionRange(this.pre);
@@ -278,19 +265,45 @@ class Editor extends React.Component {
         }
     }
 
+    componentDidMount() {
+        this.setPrismScrpit()
+        this.setPrismStyle(this.props)
+        this.recordChange(this.getPlain());
+        this.undoTimestamp = 0; // Reset timestamp
+        const $pre = this.pre;
+        $pre.addEventListener("paste", this.onPaste);
+
+        $pre.addEventListener("compositionstart", () => {
+            this.composing = true;
+        });
+        $pre.addEventListener("compositionend", () => {
+            // for canceling input.
+            this.composing = false;
+        });
+    }
+
     handleScript(name, jsString) {
         const domName = `${name}ScriptDom`
+        this[domName] = this[domName] || document.querySelector(`#${domName}`)
         if (!this[domName]) {
-            this[domName] = document.createElement('script')
-            document.body.appendChild(this[domName])
+            if (!this[domName]) {
+                this[domName] = document.createElement('script')
+                this[domName].id = domName
+                document.body.appendChild(this[domName])
+            }
+            this[domName].innerHTML = jsString
+        } else {
+            // this[domName].innerHTML = null
+            // this.setState({})
+            // setTimeout(() => {
+            //     this[domName].innerHTML = jsString
+            // }, 20);
         }
-        this[domName].innerHTML = jsString
     }
 
     setPrismStyle(props) {
         this.setLanguageScript(props.language)
-        this.setPluginsScript()
-
+        // this.setPluginsScript()
         this.setState({
             codeData: props.code || '',
             content: this.getContent(props.code, props.language)
@@ -332,33 +345,47 @@ class Editor extends React.Component {
         return lineNumbers
     }
 
-    styleLineNumbers() {
-        if (this.props.lineNumber) {
-            const $editor = this.pre;
-            const $lineNumbers = this.lineNumbersDom
-            const editorStyles = window.getComputedStyle($editor);
-            const lineStyles = window.getComputedStyle($lineNumbers);
-            const btlr = "border-top-left-radius";
-            const bblr = "border-bottom-left-radius";
-            $lineNumbers.style[btlr] = editorStyles[btlr];
-            $lineNumbers.style[bblr] = editorStyles[bblr];
-            $editor.style[btlr] = 0;
-            $editor.style[bblr] = 0;
-            // $lineNumbers.style['margin-top'] = editorStyles['padding-top'];
-            const stylesList = [
-                // "background-color",
-                "font-family",
-                "font-size",
-                "line-height",
-                "padding-top",
-                "padding-bottom",
-            ];
+    deletePx = (str = '') => parseInt(str.split('px')[0])
 
-            stylesList.forEach(style => {
-                $lineNumbers.style[style] = editorStyles[style];
-            });
-            $editor.style["height"] = $lineNumbers.offsetHeight + 'px'
-        }
+    styleLineNumbers() {
+        setTimeout(() => {
+            if (this.props.lineNumber) {
+                const lineNumbers = this.getLineNumbers()
+                const reactLineNumbers = lineNumbers.map((item, i) => <span key={i} />)
+                const $editor = this.pre;
+                const $code = $editor.querySelector('code')
+                const editorStyles = window.getComputedStyle($editor);
+                let $lineNumbers = $code.querySelector('.line-numbers-rows')
+                if (!$lineNumbers) {
+                    $lineNumbers = document.createElement('div')
+                    $code.appendChild($lineNumbers)
+                    $lineNumbers.className = "line-numbers-rows"
+                    const btlr = "border-top-left-radius";
+                    const bblr = "border-bottom-left-radius";
+                    $lineNumbers.style[btlr] = editorStyles[btlr];
+                    $lineNumbers.style[bblr] = editorStyles[bblr];
+                    $editor.style[btlr] = 0;
+                    $editor.style[bblr] = 0;
+                    const stylesList = [
+                        // "background-color",
+                        "font-family",
+                        "font-size",
+                        "line-height",
+                        // "padding-top",
+                        // "padding-bottom",
+                    ];
+                    stylesList.forEach(style => {
+                        $lineNumbers.style[style] = editorStyles[style];
+                    });
+                }
+                $lineNumbers.innerHTML = renderToString(reactLineNumbers)
+                $editor.style['height'] = $lineNumbers.offsetHeight +
+                    this.deletePx(editorStyles["padding-top"]) +
+                    this.deletePx(editorStyles["padding-bottom"])
+                    + 'px'
+            }
+        }, 20);
+
     }
 
 
@@ -367,7 +394,7 @@ class Editor extends React.Component {
         const { content, lineNumbersHeight } = this.state
         const lineNumbers = this.getLineNumbers()
         return <div className='module-prism-editor-container' style={{ position: 'relative' }}>
-            {lineNumber && <div
+            {/* {lineNumber && <div
                 className="line-numbers-container"
                 ref={ref => this.lineNumbersDom = ref}
             >
@@ -375,10 +402,10 @@ class Editor extends React.Component {
                     key={i}
                 // style={{ height: 'calc(100)' }}
                 />)}
-            </div>}
+            </div>} */}
             <pre
-                className={`language-${language} ${false ? 'line-numbers' : ''} ${clipboard ? 'copy-to-clipboard' : ''}`}
-                style={{ paddingLeft: '3em' }}
+                className={`language-${language} ${true ? 'line-numbers' : ''} ${clipboard ? 'copy-to-clipboard' : ''}`}
+                // style={{ paddingLeft: '3em' }}
                 ref={ref => this.pre = ref}
                 dangerouslySetInnerHTML={{ __html: content }}
                 contentEditable={!readOnly}
@@ -396,30 +423,47 @@ class Editor extends React.Component {
             .module-prism-editor-container * {
                 box-sizing:border-box;
             }
-            .module-prism-editor-container .line-numbers-container {
-                position:absolute;
+            pre[class*="language-"].line-numbers {
+                position: relative;
+                padding-left: 3.8em;
+                counter-reset: linenumber;
+            }
+            
+            pre[class*="language-"].line-numbers > code {
+                position: relative;
+                white-space: inherit;
+            }
+            
+            .line-numbers .line-numbers-rows {
+                position: absolute;
                 pointer-events: none;
+                top: 0;
                 font-size: 100%;
-                z-index:1;
-                width: 2.5em; /* works for line-numbers below 1000 lines */
+                left: -3.8em;
+                width: 3em; /* works for line-numbers below 1000 lines */
                 letter-spacing: -1px;
-                user-select: none;
-            }
-            
-            .module-prism-editor-container .line-numbers-container > span {
-                pointer-events: none;
-                display: block;
-                counter-increment: linenumber;
                 border-right: 1px solid #999;
+            
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            
             }
             
-            .module-prism-editor-container .line-numbers-container > span:before {
-                content: counter(linenumber);
-                color: #999;
-                display: block;
-                padding-right: 0.8em;
-                text-align: right;
-            }
+             .line-numbers-rows > span {
+                 pointer-events: none;
+                 display: block;
+                 counter-increment: linenumber;
+             }
+        
+                 .line-numbers-rows > span:before {
+                     content: counter(linenumber);
+                     color: #999;
+                     display: block;
+                     padding-right: 0.8em;
+                     text-align: right;
+                 }
             `}</style>
         </div >
     }
