@@ -7,13 +7,19 @@ import selectionRange from "./utils/selection-range.js";
 import { getIndent, getDeindentLevel } from "./utils/getIndent";
 import { FORBIDDEN_KEYS } from "./utils/constant";
 import themes from './utils/themes'
+// import { languages } from 'prismjs';
+import languages from './utils/languages'
 
 
 
 const themesCss = {}
-
 themes.forEach(({ title, srcName }) => {
     themesCss[title] = require(`!!raw-loader!prismjs/themes/${srcName}.css`).default
+})
+
+const languagesJs = {}
+Array.from(new Set(languages.map(item => item.value))).forEach(item => {
+    languagesJs[item] = require(`!!raw-loader!prismjs/components/prism-${item}.js`).default
 })
 
 
@@ -79,7 +85,14 @@ class Editor extends React.Component {
     }
     updateContent(plain) {
         const { changeCode } = this.props
-        changeCode(plain)
+        if (changeCode) {
+            changeCode(plain)
+        }
+        this.setState({
+            codeData: plain || '',
+            content: this.getContent(plain, this.props.language)
+        }, () => this.styleLineNumbers())
+
     }
     restoreStackState(offset) {
         console.log(this.undoStack)
@@ -210,6 +223,7 @@ class Editor extends React.Component {
         this.recordChange(this.getPlain());
         this.undoTimestamp = 0; // Reset timestamp
         this.styleLineNumbers();
+        this.setLanguage(this.props.language)
 
 
         const $pre = this.pre;
@@ -252,6 +266,7 @@ class Editor extends React.Component {
 
     componentWillUpdate(nextProps, nextState) {
         if (this.props.code !== nextProps.code || this.props.language !== nextProps.language) {
+            this.setLanguage(nextProps.language)
             this.setState({
                 codeData: nextProps.code || '',
                 content: this.getContent(nextProps.code, nextProps.language)
@@ -260,6 +275,15 @@ class Editor extends React.Component {
         if (this.props.theme !== nextProps.theme) {
             this.setState({}, this.styleLineNumbers)
         }
+    }
+
+
+    setLanguage(language) {
+        if (!this.languageScript) {
+            this.languageScript = document.createElement('script')
+            document.body.appendChild(this.languageScript)
+        }
+        this.languageScript.innerHTML = languagesJs[language]
     }
 
     componentDidUpdate() {
@@ -293,18 +317,20 @@ class Editor extends React.Component {
             $lineNumbers.style[bblr] = editorStyles[bblr];
             $editor.style[btlr] = 0;
             $editor.style[bblr] = 0;
-            $lineNumbers.style['margin-top'] = editorStyles['padding-top'];
+            // $lineNumbers.style['margin-top'] = editorStyles['padding-top'];
             const stylesList = [
                 // "background-color",
                 "font-family",
                 "font-size",
-                "line-height"
+                "line-height",
+                "padding-top",
+                "padding-bottom",
             ];
 
             stylesList.forEach(style => {
                 $lineNumbers.style[style] = editorStyles[style];
             });
-            $editor.style["height"] = lineStyles['height']
+            $editor.style["height"] = $lineNumbers.offsetHeight + 'px'
         }
     }
 
@@ -313,14 +339,14 @@ class Editor extends React.Component {
         const { language, readOnly, theme, lineNumber, clipboard } = this.props
         const { content, lineNumbersHeight } = this.state
         const lineNumbers = this.getLineNumbers()
-        return <div style={{ position: 'relative' }}>
+        return <div className='module-prism-editor-container' style={{ position: 'relative' }}>
             {lineNumber && <div
                 className="line-numbers-container"
                 ref={ref => this.lineNumbersDom = ref}
             >
                 {lineNumbers.map((item, i) => <span
                     key={i}
-                    style={{ height: 24 }}
+                // style={{ height: 'calc(100)' }}
                 />)}
             </div>}
             <pre
@@ -340,24 +366,27 @@ class Editor extends React.Component {
             />
             <style key={theme}>{themesCss[theme]}</style>
             <style>{`
-            .line-numbers-container {
+            .module-prism-editor-container * {
+                box-sizing:border-box;
+            }
+            .module-prism-editor-container .line-numbers-container {
                 position:absolute;
                 pointer-events: none;
                 font-size: 100%;
                 z-index:1;
                 width: 2.5em; /* works for line-numbers below 1000 lines */
                 letter-spacing: -1px;
-                border-right: 1px solid #999;
                 user-select: none;
             }
             
-            .line-numbers-container > span {
+            .module-prism-editor-container .line-numbers-container > span {
                 pointer-events: none;
                 display: block;
                 counter-increment: linenumber;
+                border-right: 1px solid #999;
             }
             
-            .line-numbers-container > span:before {
+            .module-prism-editor-container .line-numbers-container > span:before {
                 content: counter(linenumber);
                 color: #999;
                 display: block;
@@ -365,6 +394,11 @@ class Editor extends React.Component {
                 text-align: right;
             }
             `}</style>
+            <script type="text/javascript">{`console.log('aaaa')`}</script>
+            <script dangerouslySetInnerHTML={{
+                __html: `debugger;
+            ${languagesJs[language]}`
+            }} />
         </div >
     }
 }

@@ -1,7 +1,8 @@
 import escapeHtml from "escape-html";
-import Prism from 'prismjs'
+import 'prismjs'
 
-// const Prism = window.Prism
+
+const Prism = window.Prism
 
 function wrap(code, lang, langPrism) {
   if (lang === "text") {

@@ -5,25 +5,35 @@ import themes from '../../src/utils/themes'
 import languages from '../../src/utils/languages'
 
 
+
 class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      language: 'html',
+      language: 'json',
       theme: 'default',
       lineNumber: true,
       readOnly: true,
-      code: `<!DOCTYPE html>
-      <html lang="en">
-        <head>
-          <meta charset="utf-8" />
-          <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-          <script src="./prism2.js"></script>
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <meta name="theme-color" content="#000000" />
+      code: `import React, { Fragment } from 'react';
 
-        </body>
-      </html>`
+      import HomeBanner from './Banner';
+      import HomeServiceCatagory from './ServiceCatagory';
+      import HomeMicroService from './MicroService';
+      
+      
+      function Home() {
+      
+        return (
+          <Fragment>
+            <HomeBanner/>
+            <HomeServiceCatagory/>
+            <HomeMicroService/>
+          </Fragment>
+        );
+      }
+      
+      export default Home;
+      `
     }
   }
 
@@ -67,7 +77,7 @@ class App extends React.Component {
         </div>
         <div>
           Documentation on
-          <a href="https://github.com/koca/vue-prism-editor">Github</a>
+          <a href="https://github.com/lumia2046/react-prism-editor">Github</a>
         </div>
       </header>
       <main>
@@ -76,9 +86,12 @@ class App extends React.Component {
           language={language}
           theme={theme}
           code={code}
-          changeCode={code => this.setState({ code })}
           lineNumber={lineNumber}
           readOnly={readOnly}
+          clipboard={true}
+          changeCode={code => {
+            this.setState({ code })
+          }}
         />
       </main>
     </div >

@@ -1,6 +1,6 @@
 {
   "name": "react-prism-editor",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "react prism editor",
   "main": "lib/index.js",
   "files": [
@@ -18,11 +18,7 @@
     "test:coverage": "nwb test-react --coverage",
     "test:watch": "nwb test-react --server"
   },
-  "dependencies": {},
-  "peerDependencies": {
-    "react": "16.x"
-  },
-  "devDependencies": {
+  "dependencies": {
     "babel-plugin-prismjs": "^2.0.1",
     "dom-iterator": "^1.0.0",
     "escape-html": "^1.0.3",
@@ -32,6 +28,12 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "unescape": "^1.0.1"
+  },
+  "peerDependencies": {
+    "react": "16.x"
+  },
+  "devDependencies": {
+    
   },
   "author": "zhang yue",
   "homepage": "",
