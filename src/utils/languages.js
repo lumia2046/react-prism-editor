@@ -19,6 +19,7 @@
 //     { title: 'SQL', value: 'sql' }
 // ]
 const languages = [
+    { title: 'MARKUP-TEM', value: 'markup-templating' },
     { title: 'JS', value: 'javascript' },
     { title: 'JSON', value: 'json' },
     { title: 'JSX', value: 'jsx' },

@@ -11,11 +11,23 @@ import themes from './utils/themes'
 // import { languages } from 'prismjs';
 import languages from './utils/languages'
 import plugins from './utils/plugins'
-// import 'clipboard'
-// import 'prismjs/plugins/toolbar/prism-toolbar.css'
-// import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
+import 'clipboard'
+import 'prismjs/plugins/toolbar/prism-toolbar.css'
+import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
 
-
+const addCssParent = (parentSelector, cssStr) => {
+    cssStr.replace(new RegExp(':not\\(pre\\) > code\\[class\\*="language-"]', 'g'), `${parentSelector} not(pre)code`)
+    cssStr.replace(new RegExp('\\.language-css \\.token\\.string', 'g'), `${parentSelector} language-token`)
+    cssStr.replace(new RegExp('\\.style \\.token\\.string', 'g'), `${parentSelector} style.string`)
+    const keyArray = ['code\\[class\\*="language-"]', 'pre\\[class\\*="language-"]', '\\.token\\.']
+    keyArray.forEach(item => {
+        cssStr.replace(new RegExp(item, 'g'), `${parentSelector} ${item}`)
+    })
+    cssStr.replace(new RegExp(`not\\(pre\\)code`, 'g'), ':not(pre) > code[class*="language-"]')
+    cssStr.replace(new RegExp(`language-token`, 'g'), '.language-css .token.string')
+    cssStr.replace(new RegExp(`style\\.string`, 'g'), '.style .token.string')
+    return cssStr
+}
 
 const themesCss = {}
 themes.forEach(({ title, srcName }) => {
@@ -98,17 +110,7 @@ class Editor extends React.Component {
 
         this.undoTimestamp = timestamp;
     }
-    updateContent(plain) {
-        const { changeCode } = this.props
-        if (changeCode) {
-            changeCode(plain)
-        }
-        this.setState({
-            codeData: plain || '',
-            content: this.getContent(plain, this.props.language)
-        }, () => this.styleLineNumbers())
 
-    }
     restoreStackState(offset) {
         console.log(this.undoStack)
         const { plain, selection } = this.undoStack[
@@ -231,7 +233,7 @@ class Editor extends React.Component {
     }
 
     getContent(codeData, language) {
-        return prism(codeData || "", language);
+        return prism(this.prism, codeData || "", language);
     }
 
     onPaste = e => {
@@ -266,9 +268,28 @@ class Editor extends React.Component {
     }
 
     componentDidMount() {
-        this.setPrismScrpit()
-        this.setPrismStyle(this.props)
-        this.recordChange(this.getPlain());
+        // document.addEventListener('DOMContentLoaded',()=>{
+        //     console.log('DOMContentLoaded')
+        // })
+        // const event = new CustomEvent("DOMContentLoaded", {
+        //     detail: {
+        //       hazcheeseburger: true
+        //     }
+        //   })
+        // setInterval(() => {
+        //     document.dispatchEvent(event)
+        // }, 1000);
+        this.setPrismScript()
+        this.setPluginsScript()
+        //php需要
+        this.setLanguageScript('markup-templating')
+        this.setState({}, () => {
+            this.prism = window.Prism
+            this.setPrismStyle(this.props)
+            this.recordChange(this.getPlain());
+        })
+
+
         this.undoTimestamp = 0; // Reset timestamp
         const $pre = this.pre;
         $pre.addEventListener("paste", this.onPaste);
@@ -282,36 +303,76 @@ class Editor extends React.Component {
         });
     }
 
-    handleScript(name, jsString) {
-        const domName = `${name}ScriptDom`
-        this[domName] = this[domName] || document.querySelector(`#${domName}`)
-        if (!this[domName]) {
-            if (!this[domName]) {
-                this[domName] = document.createElement('script')
-                this[domName].id = domName
-                document.body.appendChild(this[domName])
-            }
-            this[domName].innerHTML = jsString
-        } else {
-            // this[domName].innerHTML = null
-            // this.setState({})
-            // setTimeout(() => {
-            //     this[domName].innerHTML = jsString
-            // }, 20);
-        }
+    componentWillUnmount() {
+        this.addedDomNames.forEach(domName => {
+            this[domName] && document.body.removeChild(this[domName])
+        })
     }
 
-    setPrismStyle(props) {
+    updateContent(plain) {
+        const { changeCode } = this.props
+        if (changeCode) {
+            changeCode(plain)
+        }
+        this.setState({
+            codeData: plain || '',
+            content: this.getContent(plain, this.props.language)
+        }, () => {
+            this.prism.hooks.run('complete', { code: plain, element: this.pre.querySelector('code') })
+            // this.setPrismScript()
+            // this.setLanguageScript(this.props.language)
+            // this.setPluginsScript()
+        })
+        // }, () => this.styleLineNumbers())
+
+    }
+
+    addedDomNames = []
+
+    handleScript(name, jsString) {
+        const domName = `${name}ScriptDom`
+
+        // this[domName] = this[domName] || document.querySelector(`#${domName}`)
+
+        if (this[domName]) {
+            //script必须每次通过appendChild的方式才会重新执行，所以先要remove掉
+            document.body.removeChild(this[domName])
+        } else {
+            this.addedDomNames.push(`${name}ScriptDom`)
+        }
+        this[domName] = document.createElement('script')
+        this[domName].id = domName
+        this[domName].innerHTML = jsString
+        document.body.appendChild(this[domName])
+    }
+
+    setPrismStyle(props, notSetState) {
+        // debugger
+        // this.Prism = null
+        // this.setPrismScript()
         this.setLanguageScript(props.language)
-        // this.setPluginsScript()
+
+        // const event = new CustomEvent("DOMContentLoaded", {
+        //     detail: {
+        //         hazcheeseburger: true
+        //     }
+        // })
+        // document.dispatchEvent(event)
+        // setInterval(() => {
+        //     
+        // }, 1000);
+        // 
         this.setState({
             codeData: props.code || '',
             content: this.getContent(props.code, props.language)
-        }, () => this.styleLineNumbers())
+        }, () => {
+            this.prism.hooks.run('complete', { code: this.state.codeData, element: this.pre.querySelector('code') })
+            // this.styleLineNumbers()
+        })
 
     }
 
-    setPrismScrpit() {
+    setPrismScript() {
         this.handleScript('prism', prismJs)
     }
 
@@ -324,6 +385,9 @@ class Editor extends React.Component {
 
     setLanguageScript(language) {
         this.handleScript('language', languagesJs[language])
+        // this.prism.language = window.Prism.language
+        console.log(this.prism)
+
     }
 
     componentDidUpdate() {
@@ -348,45 +412,46 @@ class Editor extends React.Component {
     deletePx = (str = '') => parseInt(str.split('px')[0])
 
     styleLineNumbers() {
-        setTimeout(() => {
-            if (this.props.lineNumber) {
-                const lineNumbers = this.getLineNumbers()
-                const reactLineNumbers = lineNumbers.map((item, i) => <span key={i} />)
-                const $editor = this.pre;
-                const $code = $editor.querySelector('code')
-                const editorStyles = window.getComputedStyle($editor);
-                let $lineNumbers = $code.querySelector('.line-numbers-rows')
-                if (!$lineNumbers) {
-                    $lineNumbers = document.createElement('div')
-                    $code.appendChild($lineNumbers)
-                    $lineNumbers.className = "line-numbers-rows"
-                    const btlr = "border-top-left-radius";
-                    const bblr = "border-bottom-left-radius";
-                    $lineNumbers.style[btlr] = editorStyles[btlr];
-                    $lineNumbers.style[bblr] = editorStyles[bblr];
-                    $editor.style[btlr] = 0;
-                    $editor.style[bblr] = 0;
-                    const stylesList = [
-                        // "background-color",
-                        "font-family",
-                        "font-size",
-                        "line-height",
-                        // "padding-top",
-                        // "padding-bottom",
-                    ];
-                    stylesList.forEach(style => {
-                        $lineNumbers.style[style] = editorStyles[style];
-                    });
-                }
-                $lineNumbers.innerHTML = renderToString(reactLineNumbers)
-                $editor.style['height'] = $lineNumbers.offsetHeight +
-                    // this.deletePx(editorStyles["padding-top"]) +
-                    // this.deletePx(editorStyles["padding-bottom"]) +
-                    // this.deletePx(editorStyles["border-top-width"]) +
-                    // this.deletePx(editorStyles["border-bottom-width"]) +
-                    'px'
-            }
-        }, 20);
+        // clearTimeout(this.timeout)
+        // if (this.props.lineNumber) {
+        //     this.timeout = setTimeout(() => {
+        //         const lineNumbers = this.getLineNumbers()
+        //         const reactLineNumbers = lineNumbers.map((item, i) => <span key={i} />)
+        //         const $editor = this.pre;
+        //         const $code = $editor.querySelector('code')
+        //         const editorStyles = window.getComputedStyle($editor);
+        //         let $lineNumbers = $code.querySelector('.line-numbers-rows')
+        //         if (!$lineNumbers) {
+        //             $lineNumbers = document.createElement('div')
+        //             $code.appendChild($lineNumbers)
+        //             $lineNumbers.className = "line-numbers-rows"
+        //             const btlr = "border-top-left-radius";
+        //             const bblr = "border-bottom-left-radius";
+        //             $lineNumbers.style[btlr] = editorStyles[btlr];
+        //             $lineNumbers.style[bblr] = editorStyles[bblr];
+        //             $editor.style[btlr] = 0;
+        //             $editor.style[bblr] = 0;
+        //             const stylesList = [
+        //                 // "background-color",
+        //                 "font-family",
+        //                 "font-size",
+        //                 "line-height",
+        //                 // "padding-top",
+        //                 // "padding-bottom",
+        //             ];
+        //             stylesList.forEach(style => {
+        //                 $lineNumbers.style[style] = editorStyles[style];
+        //             });
+        //         }
+        //         $lineNumbers.innerHTML = renderToString(reactLineNumbers)
+        //         $editor.style['height'] = $lineNumbers.offsetHeight +
+        //             // this.deletePx(editorStyles["padding-top"]) +
+        //             // this.deletePx(editorStyles["padding-bottom"]) +
+        //             // this.deletePx(editorStyles["border-top-width"]) +
+        //             // this.deletePx(editorStyles["border-bottom-width"]) +
+        //             'px'
+        //     }, 20)
+        // }
 
     }
 
@@ -394,8 +459,7 @@ class Editor extends React.Component {
     render() {
         const { language, readOnly, theme, lineNumber, clipboard } = this.props
         const { content, lineNumbersHeight } = this.state
-        const lineNumbers = this.getLineNumbers()
-        return <div className='module-prism-editor-container' style={{ position: 'relative' }}>
+        return <div className={`module-prism-editor-container module-theme-${theme}`}>
             {/* {lineNumber && <div
                 className="line-numbers-container"
                 ref={ref => this.lineNumbersDom = ref}
@@ -420,29 +484,26 @@ class Editor extends React.Component {
                 autoCorrect="off"
                 data-gramm="false"
             />
-            <style key={theme}>{themesCss[theme]}</style>
-            <style>{`
-            // .module-prism-editor-container * {
-            //     box-sizing:border-box;
-            // }
-            pre[class*="language-"].line-numbers {
+            <style key={theme}>{addCssParent(`.module-theme-${theme}`, themesCss[theme])}</style>
+            {/* <style>{`
+            .module-prism-editor-container pre[class*="language-"].line-numbers {
                 position: relative;
                 padding-left: 3.8em;
                 counter-reset: linenumber;
             }
             
-            pre[class*="language-"].line-numbers > code {
+            .module-prism-editor-container pre[class*="language-"].line-numbers > code {
                 position: relative;
                 white-space: inherit;
             }
             
-            .line-numbers .line-numbers-rows {
+            .module-prism-editor-container .line-numbers .line-numbers-rows {
                 position: absolute;
                 pointer-events: none;
                 top: 0;
                 font-size: 100%;
                 left: -3.8em;
-                width: 3em; /* works for line-numbers below 1000 lines */
+                width: 3em; 
                 letter-spacing: -1px;
                 border-right: 1px solid #999;
             
@@ -453,20 +514,20 @@ class Editor extends React.Component {
             
             }
             
-             .line-numbers-rows > span {
-                 pointer-events: none;
-                 display: block;
-                 counter-increment: linenumber;
+            .module-prism-editor-container .line-numbers-rows > span {
+                pointer-events: none;
+                display: block;
+                counter-increment: linenumber;
              }
         
-                 .line-numbers-rows > span:before {
-                     content: counter(linenumber);
-                     color: #999;
-                     display: block;
-                     padding-right: 0.8em;
-                     text-align: right;
-                 }
-            `}</style>
+            .module-prism-editor-container .line-numbers-rows > span:before {
+                content: counter(linenumber);
+                color: #999;
+                display: block;
+                padding-right: 0.8em;
+                text-align: right;
+            }
+            `}</style> */}
         </div >
     }
 }

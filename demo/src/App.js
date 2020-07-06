@@ -10,29 +10,18 @@ class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      language: 'jsx',
+      language: 'json',
       theme: 'default',
       lineNumber: true,
       readOnly: true,
-      code: `import React, { Fragment } from 'react';
-
-      import HomeBanner from './Banner';
-      import HomeServiceCatagory from './ServiceCatagory';
-      import HomeMicroService from './MicroService';
+      code: `<html>
+      <body>
       
+      Welcome <?php echo $_POST["name"]; ?><br>
+      Your email address is: <?php echo $_POST["email"]; ?>
       
-      function Home() {
-      
-        return (
-          <Fragment>
-            <HomeBanner/>
-            <HomeServiceCatagory/>
-            <HomeMicroService/>
-          </Fragment>
-        );
-      }
-      
-      export default Home;
+      </body>
+      </html>
       `
     }
   }
@@ -59,7 +48,7 @@ class App extends React.Component {
           </span>
           <span style={{ marginRight: 10 }}>
             Theme
-            <select value={theme} onChange={e => this.setState({ theme: e.target.value })}>
+            <select style={{marginLeft:5}} value={theme} onChange={e => this.setState({ theme: e.target.value })}>
               {themes.map(({ title }, i) =>
                 <option key={i} value={title}>{title}</option>
               )}
@@ -67,7 +56,7 @@ class App extends React.Component {
           </span>
           <span>
             Language
-            <select value={language} onChange={e => this.setState({ language: e.target.value })}>
+            <select style={{marginLeft:5}} value={language} onChange={e => this.setState({ language: e.target.value })}>
               {languages.map(({ title, value }, i) =>
                 <option key={i} value={value}>{title}</option>
               )}
@@ -75,7 +64,7 @@ class App extends React.Component {
           </span>
 
         </div>
-        <div>
+        <div style={{padding:10}}>
           Documentation on
           <a href="https://github.com/lumia2046/react-prism-editor">Github</a>
         </div>
@@ -90,10 +79,24 @@ class App extends React.Component {
           readOnly={readOnly}
           clipboard={true}
           changeCode={code => {
-            this.setState({ code })
+            this.code = code
+            console.log(code)
           }}
         />
       </main>
+      <Editor
+          key={lineNumber}
+          language={'php'}
+          theme={theme}
+          code={code}
+          lineNumber={lineNumber}
+          readOnly={readOnly}
+          clipboard={true}
+          changeCode={code => {
+            this.code = code
+            console.log(code)
+          }}
+        />
     </div >
   }
 }

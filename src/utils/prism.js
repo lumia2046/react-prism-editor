@@ -11,8 +11,8 @@ function wrap(code, lang, langPrism) {
   return `<code class="language-${langPrism}">${code}</code>`;
 }
 
-export default (str, lang) => {
-  const Prism = window.Prism
+export default (Prism, str, lang) => {
+  // const Prism = window.Prism
   if (!lang) {
     return wrap(str, "text", "text");
   }
@@ -26,7 +26,7 @@ export default (str, lang) => {
     // console.log(code)
     // Prism.highlightAll()
     // {highlightedCode}
-    
+
     return wrap(code, rawLang, lang);
   }
   return wrap(str, "text", "text");
