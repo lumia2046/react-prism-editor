@@ -37,13 +37,13 @@ themes.forEach(({ title, srcName }) => {
 
 const languagesJs = {}
 Array.from(new Set(languages.map(item => item.value))).forEach(item => {
-    languagesJs[item] = require(`!!raw-loader!prismjs/components/prism-${item}.js`).default
+    languagesJs[item] = require(`!!raw-loader!prismjs/components/prism-${['html', 'vue', 'angular', 'xml'].includes(item) ? 'markup' : item}.min.js`).default
 })
 
 const pluginsJs = {}
 // const pluginsCss = []
 Array.from(new Set(plugins.map(item => item.value))).forEach(item => {
-    pluginsJs[item] = require(`!!raw-loader!prismjs/plugins/${item}/prism-${item}.js`).default
+    pluginsJs[item] = require(`!!raw-loader!prismjs/plugins/${item}/prism-${item}.min.js`).default
     // pluginsCss.push(require(`!!raw-loader!prismjs/plugins/${item}/prism-${item}.js`).default)
 })
 
@@ -319,6 +319,10 @@ class Editor extends React.Component {
             codeData: plain || '',
             content: this.getContent(plain, this.props.language)
         }, () => {
+            const container = this.pre.parentNode
+            container.className = container.className.replace(/code-toolbar/g,'')
+            const toolbar = container.querySelector('.toolbar')
+            toolbar && container.removeChild(toolbar)
             this.prism.hooks.run('complete', { code: plain, element: this.pre.querySelector('code') })
             // this.setPrismScript()
             // this.setLanguageScript(this.props.language)
@@ -471,7 +475,7 @@ class Editor extends React.Component {
                 />)}
             </div>} */}
             <pre
-                className={`language-${language} ${true ? 'line-numbers' : ''} ${clipboard ? 'copy-to-clipboard' : ''}`}
+                className={`language-${language} ${lineNumber ? 'line-numbers' : ''} copy-to-clipboard show-language`}
                 ref={ref => this.pre = ref}
                 style={{ marginTop: 0 }}
                 dangerouslySetInnerHTML={{ __html: content }}
