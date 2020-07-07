@@ -1,6 +1,6 @@
 {
   "name": "react-prism-editor",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "react prism editor",
   "main": "lib/index.js",
   "files": [
@@ -32,17 +32,16 @@
   "peerDependencies": {
     "react": "16.x"
   },
-  "devDependencies": {
-    
-  },
+  "devDependencies": {},
   "author": "zhang yue",
   "homepage": "",
   "license": "MIT",
   "repository": "",
   "keywords": [
-    "react-component",
-    "react prismjs",
     "prismjs",
-    "editor"
+    "editor",
+    "code-editor",
+    "react-component",
+    "react prismjs"
   ]
 }

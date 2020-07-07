@@ -13,19 +13,20 @@ import languages from './utils/languages'
 import plugins from './utils/plugins'
 import 'clipboard'
 import 'prismjs/plugins/toolbar/prism-toolbar.css'
-import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
+// import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
 
 const addCssParent = (parentSelector, cssStr) => {
-    cssStr.replace(new RegExp(':not\\(pre\\) > code\\[class\\*="language-"]', 'g'), `${parentSelector} not(pre)code`)
-    cssStr.replace(new RegExp('\\.language-css \\.token\\.string', 'g'), `${parentSelector} language-token`)
-    cssStr.replace(new RegExp('\\.style \\.token\\.string', 'g'), `${parentSelector} style.string`)
-    const keyArray = ['code\\[class\\*="language-"]', 'pre\\[class\\*="language-"]', '\\.token\\.']
+    cssStr = cssStr.replace(/:not\(pre\) > code\[class\*="language-"\]/g, `${parentSelector} not(pre)code`)
+    cssStr = cssStr.replace(/\.language-css \.token\.string/g, `${parentSelector} language-token`)
+    cssStr = cssStr.replace(/\.style \.token\.string/g, `${parentSelector} style.string`)
+    const keyArray = ['code\\[class\\*="language-"\\]', 'pre\\[class\\*="language-"\\]', '\\.token\\.']
     keyArray.forEach(item => {
-        cssStr.replace(new RegExp(item, 'g'), `${parentSelector} ${item}`)
+        const name = item.replace(/\\/g, '')
+        cssStr = cssStr.replace(new RegExp(item, 'g'), `${parentSelector} ${name}`)
     })
-    cssStr.replace(new RegExp(`not\\(pre\\)code`, 'g'), ':not(pre) > code[class*="language-"]')
-    cssStr.replace(new RegExp(`language-token`, 'g'), '.language-css .token.string')
-    cssStr.replace(new RegExp(`style\\.string`, 'g'), '.style .token.string')
+    cssStr = cssStr.replace(new RegExp(`not\\(pre\\)code`, 'g'), ':not(pre) > code[class*="language-"]')
+    cssStr = cssStr.replace(new RegExp(`language-token`, 'g'), '.language-css .token.string')
+    cssStr = cssStr.replace(new RegExp(`style\\.string`, 'g'), '.style .token.string')
     return cssStr
 }
 
@@ -283,11 +284,11 @@ class Editor extends React.Component {
         this.setPluginsScript()
         //php需要
         this.setLanguageScript('markup-templating')
-        this.setState({}, () => {
-            this.prism = window.Prism
-            this.setPrismStyle(this.props)
-            this.recordChange(this.getPlain());
-        })
+
+        this.prism = window.Prism
+        this.setPrismStyle(this.props)
+        this.recordChange(this.getPlain());
+
 
 
         this.undoTimestamp = 0; // Reset timestamp
@@ -484,7 +485,9 @@ class Editor extends React.Component {
                 autoCorrect="off"
                 data-gramm="false"
             />
+            <style>{addCssParent(`.module-theme-${theme}`, require(`!!raw-loader!prismjs/plugins/line-numbers/prism-line-numbers.css`).default)}</style>
             <style key={theme}>{addCssParent(`.module-theme-${theme}`, themesCss[theme])}</style>
+
             {/* <style>{`
             .module-prism-editor-container pre[class*="language-"].line-numbers {
                 position: relative;
