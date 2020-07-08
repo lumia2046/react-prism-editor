@@ -8,7 +8,6 @@ import selectionRange from "./utils/selection-range.js";
 import { getIndent, getDeindentLevel } from "./utils/getIndent";
 import { FORBIDDEN_KEYS } from "./utils/constant";
 import themes from './utils/themes'
-// import { languages } from 'prismjs';
 import languages from './utils/languages'
 import plugins from './utils/plugins'
 import 'clipboard'
@@ -234,7 +233,7 @@ class Editor extends React.Component {
     }
 
     getContent(codeData, language) {
-        return prism(this.prism, codeData || "", language);
+        return prism(this.Prism, codeData || "", language);
     }
 
     onPaste = e => {
@@ -282,10 +281,10 @@ class Editor extends React.Component {
         // }, 1000);
         this.setPrismScript()
         this.setPluginsScript()
-        //php需要
+        //php等语言需要先引入这个
         this.setLanguageScript('markup-templating')
 
-        this.prism = window.Prism
+        this.Prism = window.Prism
         this.setPrismStyle(this.props)
         this.recordChange(this.getPlain());
 
@@ -320,15 +319,18 @@ class Editor extends React.Component {
             content: this.getContent(plain, this.props.language)
         }, () => {
             const container = this.pre.parentNode
+            //去掉 toolbar
             container.className = container.className.replace(/code-toolbar/g,'')
             const toolbar = container.querySelector('.toolbar')
             toolbar && container.removeChild(toolbar)
-            this.prism.hooks.run('complete', { code: plain, element: this.pre.querySelector('code') })
+
+            //重新执行Prism的complete操作，linenumber,toobar等插件都在complete里挂载了回调方法
+            this.Prism.hooks.run('complete', { code: plain, element: this.pre.querySelector('code') })
             // this.setPrismScript()
             // this.setLanguageScript(this.props.language)
             // this.setPluginsScript()
         })
-        // }, () => this.styleLineNumbers())
+        // }, () => this.styleLineNumbers()) 
 
     }
 
@@ -336,9 +338,6 @@ class Editor extends React.Component {
 
     handleScript(name, jsString) {
         const domName = `${name}ScriptDom`
-
-        // this[domName] = this[domName] || document.querySelector(`#${domName}`)
-
         if (this[domName]) {
             //script必须每次通过appendChild的方式才会重新执行，所以先要remove掉
             document.body.removeChild(this[domName])
@@ -371,7 +370,7 @@ class Editor extends React.Component {
             codeData: props.code || '',
             content: this.getContent(props.code, props.language)
         }, () => {
-            this.prism.hooks.run('complete', { code: this.state.codeData, element: this.pre.querySelector('code') })
+            this.Prism.hooks.run('complete', { code: this.state.codeData, element: this.pre.querySelector('code') })
             // this.styleLineNumbers()
         })
 
@@ -390,8 +389,8 @@ class Editor extends React.Component {
 
     setLanguageScript(language) {
         this.handleScript('language', languagesJs[language])
-        // this.prism.language = window.Prism.language
-        console.log(this.prism)
+        // this.Prism.language = window.Prism.language
+        console.log(this.Prism)
 
     }
 
