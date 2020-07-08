@@ -19,20 +19,22 @@
     "test:watch": "nwb test-react --server"
   },
   "dependencies": {
-    "babel-plugin-prismjs": "^2.0.1",
     "dom-iterator": "^1.0.0",
     "escape-html": "^1.0.3",
-    "nwb": "0.25.x",
     "prismjs": "^1.20.0",
     "raw-loader": "^4.0.1",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1",
     "unescape": "^1.0.1"
   },
   "peerDependencies": {
-    "react": "16.x"
+    "react": ">=16.0.0",
+    "react-dom": ">=16.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "babel-plugin-prismjs": "^2.0.1",
+    "nwb": "0.25.x",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
   "author": "zhang yue",
   "homepage": "",
   "license": "MIT",
