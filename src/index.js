@@ -18,7 +18,7 @@ const addCssParent = (parentSelector, cssStr) => {
     cssStr = cssStr.replace(/:not\(pre\) > code\[class\*="language-"\]/g, `${parentSelector} not(pre)code`)
     cssStr = cssStr.replace(/\.language-css \.token\.string/g, `${parentSelector} language-token`)
     cssStr = cssStr.replace(/\.style \.token\.string/g, `${parentSelector} style.string`)
-    const keyArray = ['code\\[class\\*="language-"\\]', 'pre\\[class\\*="language-"\\]', '\\.token\\.']
+    const keyArray = ['code\\[class\\*="language"\\]', 'code\\[class\\*="language-"\\]', 'pre\\[class\\*="language-"\\]', '\\.token\\.']
     keyArray.forEach(item => {
         const name = item.replace(/\\/g, '')
         cssStr = cssStr.replace(new RegExp(item, 'g'), `${parentSelector} ${name}`)
@@ -263,6 +263,7 @@ class Editor extends React.Component {
             this.setPrismStyle(nextProps)
         }
         if (this.props.theme !== nextProps.theme) {
+            this.setThemeStyle(nextProps.theme)
             this.setState({}, this.styleLineNumbers)
         }
     }
@@ -279,6 +280,7 @@ class Editor extends React.Component {
         // setInterval(() => {
         //     document.dispatchEvent(event)
         // }, 1000);
+        this.setThemeStyle(this.props.theme)
         this.setPrismScript()
         this.setPluginsScript()
         //php等语言需要先引入这个
@@ -320,7 +322,7 @@ class Editor extends React.Component {
         }, () => {
             const container = this.pre.parentNode
             //去掉 toolbar
-            container.className = container.className.replace(/code-toolbar/g,'')
+            container.className = container.className.replace(/code-toolbar/g, '')
             const toolbar = container.querySelector('.toolbar')
             toolbar && container.removeChild(toolbar)
 
@@ -336,17 +338,19 @@ class Editor extends React.Component {
 
     addedDomNames = []
 
-    handleScript(name, jsString) {
-        const domName = `${name}ScriptDom`
-        if (this[domName]) {
+    addElement(type, name, content) {
+        const domName = `${name}-${type}-dom`
+        if (this[domName] || window[domName]) {
+            return
             //script必须每次通过appendChild的方式才会重新执行，所以先要remove掉
             document.body.removeChild(this[domName])
         } else {
-            this.addedDomNames.push(`${name}ScriptDom`)
+            this.addedDomNames.push(`${name}${type}Dom`)
         }
-        this[domName] = document.createElement('script')
+        window[domName] = true
+        this[domName] = document.createElement(type)
         this[domName].id = domName
-        this[domName].innerHTML = jsString
+        this[domName].innerHTML = content
         document.body.appendChild(this[domName])
     }
 
@@ -376,21 +380,25 @@ class Editor extends React.Component {
 
     }
 
+    setThemeStyle(theme) {
+        this.addElement('style', theme, addCssParent(`.module-theme-${theme}`, themesCss[theme]))
+    }
+
     setPrismScript() {
-        this.handleScript('prism', prismJs)
+        this.addElement('script', 'prism', prismJs)
     }
 
     setPluginsScript() {
         Array.from(new Set(plugins.map(item => item.value))).forEach(item => {
-            this.handleScript(item, pluginsJs[item])
+            this.addElement('script', item, pluginsJs[item])
         })
     }
 
 
     setLanguageScript(language) {
-        this.handleScript('language', languagesJs[language])
+        this.addElement('script', `${language}-language`, languagesJs[language])
         // this.Prism.language = window.Prism.language
-        console.log(this.Prism)
+        // console.log(this.Prism)
 
     }
 
@@ -489,7 +497,7 @@ class Editor extends React.Component {
                 data-gramm="false"
             />
             <style>{addCssParent(`.module-theme-${theme}`, require(`!!raw-loader!prismjs/plugins/line-numbers/prism-line-numbers.css`).default)}</style>
-            <style key={theme}>{addCssParent(`.module-theme-${theme}`, themesCss[theme])}</style>
+            {/* <style key={theme}>{addCssParent(`.module-theme-${theme}`, themesCss[theme])}</style> */}
 
             {/* <style>{`
             .module-prism-editor-container pre[class*="language-"].line-numbers {

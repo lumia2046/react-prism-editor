@@ -36,9 +36,15 @@
     "react-dom": "^16.13.1"
   },
   "author": "zhang yue",
-  "homepage": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lumia2046/react-prism-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lumia2046/react-prism-editor/issues"
+  },
+  "homepage": "https://github.com/lumia2046/react-prism-editor#readme",
   "license": "MIT",
-  "repository": "",
   "keywords": [
     "prismjs",
     "editor",
