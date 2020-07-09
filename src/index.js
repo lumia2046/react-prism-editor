@@ -7,46 +7,12 @@ import htmlToPlain from "./utils/htmlToPlain.js";
 import selectionRange from "./utils/selection-range.js";
 import { getIndent, getDeindentLevel } from "./utils/getIndent";
 import { FORBIDDEN_KEYS } from "./utils/constant";
-import themes from './utils/themes'
-import languages from './utils/languages'
-import plugins from './utils/plugins'
-import 'clipboard'
-import 'prismjs/plugins/toolbar/prism-toolbar.css'
-// import 'prismjs/plugins/line-numbers/prism-line-numbers.css'
+import { basicThemes } from './utils/themes'
+import { basicLanguages } from './utils/languages'
+import { plugins } from './utils/plugins'
+import { themesCss, lineNumbersCss, languagesJs, pluginsJs, prismJs, addCssParent } from './getPrismSource'
 
-const addCssParent = (parentSelector, cssStr) => {
-    cssStr = cssStr.replace(/:not\(pre\) > code\[class\*="language-"\]/g, `${parentSelector} not(pre)code`)
-    cssStr = cssStr.replace(/\.language-css \.token\.string/g, `${parentSelector} language-token`)
-    cssStr = cssStr.replace(/\.style \.token\.string/g, `${parentSelector} style.string`)
-    const keyArray = ['code\\[class\\*="language"\\]', 'code\\[class\\*="language-"\\]', 'pre\\[class\\*="language-"\\]', '\\.token\\.']
-    keyArray.forEach(item => {
-        const name = item.replace(/\\/g, '')
-        cssStr = cssStr.replace(new RegExp(item, 'g'), `${parentSelector} ${name}`)
-    })
-    cssStr = cssStr.replace(new RegExp(`not\\(pre\\)code`, 'g'), ':not(pre) > code[class*="language-"]')
-    cssStr = cssStr.replace(new RegExp(`language-token`, 'g'), '.language-css .token.string')
-    cssStr = cssStr.replace(new RegExp(`style\\.string`, 'g'), '.style .token.string')
-    return cssStr
-}
 
-const themesCss = {}
-themes.forEach(({ title, srcName }) => {
-    themesCss[title] = require(`!!raw-loader!prismjs/themes/${srcName}.css`).default
-})
-
-const languagesJs = {}
-Array.from(new Set(languages.map(item => item.value))).forEach(item => {
-    languagesJs[item] = require(`!!raw-loader!prismjs/components/prism-${['html', 'vue', 'angular', 'xml'].includes(item) ? 'markup' : item}.min.js`).default
-})
-
-const pluginsJs = {}
-// const pluginsCss = []
-Array.from(new Set(plugins.map(item => item.value))).forEach(item => {
-    pluginsJs[item] = require(`!!raw-loader!prismjs/plugins/${item}/prism-${item}.min.js`).default
-    // pluginsCss.push(require(`!!raw-loader!prismjs/plugins/${item}/prism-${item}.js`).default)
-})
-
-const prismJs = require(`!!raw-loader!prismjs/prism.js`).default
 
 
 
@@ -63,6 +29,7 @@ class Editor extends React.Component {
     }
 
 
+
     handleClick(evt) {
         this.undoTimestamp = 0
         this.selection = selectionRange(this.pre);
@@ -74,7 +41,6 @@ class Editor extends React.Component {
         const plain = htmlToPlain(normalizeHtml(this.pre.innerHTML));
         this._innerHTML = this.pre.innerHTML;
         this._plain = plain;
-
         return this._plain;
     }
 
@@ -258,14 +224,16 @@ class Editor extends React.Component {
         this.pre.removeEventListener("paste", this.onPaste);
     }
 
-    componentWillUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps, nextState) {
         if (this.props.code !== nextProps.code || this.props.language !== nextProps.language) {
-            this.setPrismStyle(nextProps)
+            this.setPrismContent(nextProps.code, nextProps.language)
         }
         if (this.props.theme !== nextProps.theme) {
             this.setThemeStyle(nextProps.theme)
+            this.setLineNumbersStyle(nextProps.theme)
             this.setState({}, this.styleLineNumbers)
         }
+        return true
     }
 
     componentDidMount() {
@@ -280,15 +248,21 @@ class Editor extends React.Component {
         // setInterval(() => {
         //     document.dispatchEvent(event)
         // }, 1000);
-        this.setThemeStyle(this.props.theme)
+
+        const { theme, code, language } = this.props
+        this.setThemeStyle(theme)
+        this.setLineNumbersStyle(theme)
         this.setPrismScript()
         this.setPluginsScript()
         //php等语言需要先引入这个
         this.setLanguageScript('markup-templating')
 
         this.Prism = window.Prism
-        this.setPrismStyle(this.props)
-        this.recordChange(this.getPlain());
+        this.setPrismContent(code, language)
+        this.setState({}, () => {
+            this.recordChange(this.getPlain())
+        })
+
 
 
 
@@ -312,26 +286,11 @@ class Editor extends React.Component {
     }
 
     updateContent(plain) {
-        const { changeCode } = this.props
+        const { changeCode, language } = this.props
         if (changeCode) {
             changeCode(plain)
         }
-        this.setState({
-            codeData: plain || '',
-            content: this.getContent(plain, this.props.language)
-        }, () => {
-            const container = this.pre.parentNode
-            //去掉 toolbar
-            container.className = container.className.replace(/code-toolbar/g, '')
-            const toolbar = container.querySelector('.toolbar')
-            toolbar && container.removeChild(toolbar)
-
-            //重新执行Prism的complete操作，linenumber,toobar等插件都在complete里挂载了回调方法
-            this.Prism.hooks.run('complete', { code: plain, element: this.pre.querySelector('code') })
-            // this.setPrismScript()
-            // this.setLanguageScript(this.props.language)
-            // this.setPluginsScript()
-        })
+        this.setPrismContent(plain, language)
         // }, () => this.styleLineNumbers()) 
 
     }
@@ -345,7 +304,7 @@ class Editor extends React.Component {
             //script必须每次通过appendChild的方式才会重新执行，所以先要remove掉
             document.body.removeChild(this[domName])
         } else {
-            this.addedDomNames.push(`${name}${type}Dom`)
+            this.addedDomNames.push(domName)
         }
         window[domName] = true
         this[domName] = document.createElement(type)
@@ -354,11 +313,11 @@ class Editor extends React.Component {
         document.body.appendChild(this[domName])
     }
 
-    setPrismStyle(props, notSetState) {
+    setPrismContent(code, language) {
         // debugger
         // this.Prism = null
         // this.setPrismScript()
-        this.setLanguageScript(props.language)
+        this.setLanguageScript(language)
 
         // const event = new CustomEvent("DOMContentLoaded", {
         //     detail: {
@@ -371,10 +330,17 @@ class Editor extends React.Component {
         // }, 1000);
         // 
         this.setState({
-            codeData: props.code || '',
-            content: this.getContent(props.code, props.language)
+            codeData: code || '',
+            content: this.getContent(code, language)
         }, () => {
-            this.Prism.hooks.run('complete', { code: this.state.codeData, element: this.pre.querySelector('code') })
+            // const container = this.pre.parentNode
+            //去掉 toolbar，但是不能改container的className，否则每次keyUp光变都要消失
+            // container.className = container.className.replace(/code-toolbar/g, '')
+            //const toolbar = container.querySelector('.toolbar')
+            // toolbar && container.removeChild(toolbar)
+
+            //重新执行Prism的complete操作，linenumber,toobar等插件都在complete里挂载了回调方法
+            this.Prism.hooks.run('complete', { language, code, element: this.pre.querySelector('code') })
             // this.styleLineNumbers()
         })
 
@@ -382,6 +348,10 @@ class Editor extends React.Component {
 
     setThemeStyle(theme) {
         this.addElement('style', theme, addCssParent(`.module-theme-${theme}`, themesCss[theme]))
+    }
+
+    setLineNumbersStyle(theme) {
+        this.addElement('style', `${theme}-lineNumbers`, addCssParent(`.module-theme-${theme}`, lineNumbersCss))
     }
 
     setPrismScript() {
@@ -408,18 +378,18 @@ class Editor extends React.Component {
         }
     }
 
-    getLineNumbers() {
-        let totalLines = this.state.codeData.split(/\r\n|\n/).length;
-        // TODO: Find a better way of doing this - ignore last line break (os spesific etc.)
-        if (this.state.codeData.endsWith("\n")) {
-            totalLines--;
-        }
-        const lineNumbers = []
-        for (let i = 0; i < totalLines; i++) {
-            lineNumbers.push(i)
-        }
-        return lineNumbers
-    }
+    // getLineNumbers() {
+    //     let totalLines = this.state.codeData.split(/\r\n|\n/).length;
+    //     // TODO: Find a better way of doing this - ignore last line break (os spesific etc.)
+    //     if (this.state.codeData.endsWith("\n")) {
+    //         totalLines--;
+    //     }
+    //     const lineNumbers = []
+    //     for (let i = 0; i < totalLines; i++) {
+    //         lineNumbers.push(i)
+    //     }
+    //     return lineNumbers
+    // }
 
     deletePx = (str = '') => parseInt(str.split('px')[0])
 
@@ -469,7 +439,7 @@ class Editor extends React.Component {
 
 
     render() {
-        const { language, readOnly, theme, lineNumber, clipboard } = this.props
+        const { language, readOnly, theme, lineNumber, clipboard, showLanguage } = this.props
         const { content, lineNumbersHeight } = this.state
         return <div className={`module-prism-editor-container module-theme-${theme}`}>
             {/* {lineNumber && <div
@@ -482,7 +452,7 @@ class Editor extends React.Component {
                 />)}
             </div>} */}
             <pre
-                className={`language-${language} ${lineNumber ? 'line-numbers' : ''} copy-to-clipboard show-language`}
+                className={`language-${language} ${lineNumber && 'line-numbers'} ${clipboard && 'copy-to-clipboard'} ${showLanguage && 'show-language'}`}
                 ref={ref => this.pre = ref}
                 style={{ marginTop: 0 }}
                 dangerouslySetInnerHTML={{ __html: content }}
@@ -496,7 +466,7 @@ class Editor extends React.Component {
                 autoCorrect="off"
                 data-gramm="false"
             />
-            <style>{addCssParent(`.module-theme-${theme}`, require(`!!raw-loader!prismjs/plugins/line-numbers/prism-line-numbers.css`).default)}</style>
+            {/* <style>{addCssParent(`.module-theme-${theme}`, require(`!!raw-loader!prismjs/plugins/line-numbers/prism-line-numbers.css`).default)}</style> */}
             {/* <style key={theme}>{addCssParent(`.module-theme-${theme}`, themesCss[theme])}</style> */}
 
             {/* <style>{`

@@ -41,21 +41,44 @@ yarn add react-prism-editor
 ```js
 import ReactPrismEditor from "vue-prism-editor";
 
+<ReactPrismEditor
+  language={language}
+  theme={theme}
+  code={code}
+  lineNumber={lineNumber}
+  readOnly={readOnly}
+  clipboard={true}
+  changeCode={code => {
+    this.code = code
+    console.log(code)
+  }}
+/>
 
-
-
+    'javascript', 'json', 'jsx', 'tsx', 'typescript', 'markup', 'html', 'vue',
+    'angular', 'css', 'sass', 'xml', 'java', 'php', 'csharp', 'c', 'cpp', 'sql'
 ```
 ## Props
 
 | Name                 | Type      | Default | Options                              | Description                                           |
-| -------------------- | --------- | ------- | ------------------------------------ | ----------------------------------------------------- |
-| v-model              | `string`  | -       | -                                    | for the `code` prop below                             |
-| code                 | `string`  | `""`    | -                                    | the code                                              |
-| language             | `String`  | `"js"`  | `vue,html,md,ts` + Prismjs Languages | language of the code                                  |
-| lineNumbers          | `Boolean` | `false` | -                                    | Whether to show line numbers or not                   |
-| readonly             | `Boolean` | `false` | -                                    | Indicates if the editor is read only or not.          |
-| emitEvents           | `Boolean` | `false` | -                                    | Indicates if the editor should emit events.           |
-| autoStyleLineNumbers | `Boolean` | `true`  | -                                    | Allow the line number to be styled by this component. |
+| -------------------- | --------- | ------- | ------------------------------------ | 
+
+| code                 | `string`  | `""`    | -                                    | 
+the code                                              |
+| language             | `String`  | `"js"`  | `json,javascript,jsx,tsx,typescript` | 
+|                      |           |         | `html,vue,angular,css,sass,markup`   | 
+|                      |           |         | `java,php,csharp,c,cpp,sql,xml`      | 
+language of the code                                  |
+| lineNumbers          | `Boolean` | `false` | -                                    | 
+Whether to show line numbers or not                   |
+| readonly             | `Boolean` | `false` | -                                    | 
+Indicates if the editor is read only or not.          |               |
+| clipboard            | `Boolean` | `false` | -                                    | 
+Whether to show clipboard or not                      |
+| showLanguage         | `Boolean` | `false` | -                                    | 
+Whether to show language or not                      |
+| changeCode           | `function`|         | -                                    | 
+You can get the code when you edit.                   |
+
 
 ## Events
 

@@ -1,4 +1,6 @@
-const themes = ['default', 'coy', 'dark', 'funky', 'okaidia', 'solarizedlight', 'tomorrow', 'twilight']
+export const basicThemes = ['default', 'coy', 'dark', 'funky', 'okaidia', 'solarizedlight', 'tomorrow', 'twilight']
+
+export const themes = basicThemes
     .map(item => {
         const result = { title: item, srcName: `prism-${item}` }
         if (item === 'default') {
@@ -6,5 +8,3 @@ const themes = ['default', 'coy', 'dark', 'funky', 'okaidia', 'solarizedlight', 
         }
         return result
     })
-
-export default themes
