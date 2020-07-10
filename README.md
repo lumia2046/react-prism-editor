@@ -5,7 +5,7 @@
 
 ## Demo
 
-[prism-editor.netlify.com](https://prism-editor.netlify.com/)
+[react-prism-editor](https://lumia2046.github.io/react-prism-editor/)
 
 
 ## Features

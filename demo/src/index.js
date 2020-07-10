@@ -5,25 +5,25 @@ import App from './App';
 
 
 ReactDOM.render(<div>
-    <header style={{ textAlign: 'center' }}>
-        <div>
-            <h1>React Prism Code Editor</h1>
-            <h3>
-                A dead simple code editor with syntax highlighting and line numbers.
+   <header style={{ textAlign: 'center' }}>
+      <div>
+         <h1>React Prism Code Editor</h1>
+         <h3>
+            A dead simple code editor with theme、 syntax highlighting 、 line numbers.
         </h3>
-        </div>
-        <div style={{ padding: 10 }}>
-            Documentation on
-        <a href="https://github.com/lumia2046/react-prism-editor">Github</a>
-        </div>
-    </header>
-    <main>
-        <App
-            language='jsx'
-            theme='default'
-            lineNumber={true}
-            readOnly={true}
-            code={`import React from 'react';
+      </div>
+      <div style={{ padding: 10 }}>
+         Documentation on
+        <a href="https://github.com/lumia2046/react-prism-editor" style={{ marginLeft: 10 }}>Github</a>
+      </div>
+   </header>
+   <main>
+      <App
+         language='jsx'
+         theme='default'
+         lineNumber={true}
+         readOnly={true}
+         code={`import React from 'react';
 import Editor from 'react-prism-editor'
 
 class App extends React.Component {
@@ -58,13 +58,13 @@ class App extends React.Component {
 
 export default App;
             `}
-        />
-        <App
-            language='php'
-            theme='coy'
-            lineNumber={true}
-            readOnly={true}
-            code={`<?php
+      />
+      <App
+         language='php'
+         theme='coy'
+         lineNumber={true}
+         readOnly={true}
+         code={`<?php
 // 定义变量并默认设置为空值
 $nameErr = $emailErr = $genderErr = $websiteErr = "";
 $name = $email = $gender = $comment = $website = "";
@@ -113,8 +113,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
    }
 }
 ?>`}
-        />
-    </main>
+      />
+   </main>
 </div >, document.querySelector('#demo'));
 
 // If you want your app to work offline and load faster, you can change
