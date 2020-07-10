@@ -23,7 +23,7 @@ ReactDOM.render(<div>
          theme='default'
          lineNumber={true}
          readOnly={true}
-         showLanguage={false}
+         showLanguage={true}
          clipboard={true}
          code={`import React from 'react';
 import Editor from 'react-prism-editor'
