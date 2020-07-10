@@ -1,7 +1,7 @@
 {
   "name": "react-prism-editor",
   "version": "1.0.6",
-  "description": "react prism editor",
+  "description": "React prism editor with theme,line-numbers,copy to dashboard",
   "main": "lib/index.js",
   "files": [
     "css",
@@ -43,13 +43,14 @@
   "bugs": {
     "url": "https://github.com/lumia2046/react-prism-editor/issues"
   },
-  "homepage": "https://github.com/lumia2046/react-prism-editor#readme",
+  "homepage": "https://lumia2046.github.io/react-prism-editor/",
   "license": "MIT",
   "keywords": [
     "prismjs",
     "editor",
-    "code-editor",
-    "react-component",
+    "code",
+    "code editor",
+    "react component",
     "react prismjs"
   ]
 }
