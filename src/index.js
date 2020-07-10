@@ -475,7 +475,7 @@ class Editor extends React.Component {
                 />)}
             </div>} */}
             <pre
-                className={`language-${language} ${lineNumber && 'line-numbers'} ${clipboard && 'copy-to-clipboard'} ${showLanguage && 'show-language'}`}
+                className={`language-${language} line-numbers copy-to-clipboard show-language`}
                 ref={ref => this.pre = ref}
                 style={{ marginTop: 0 }}
                 dangerouslySetInnerHTML={{ __html: content }}
@@ -492,6 +492,12 @@ class Editor extends React.Component {
             <style>{`
             .prism-editor-${id} .line-numbers-rows{
                 display:${lineNumber ? 'block' : 'none'};
+            }
+            .prism-editor-${id} .toolbar .toolbar-item:nth-child(1){
+                display:${showLanguage ? 'inline-block' : 'none'};
+            }
+            .prism-editor-${id} .toolbar .toolbar-item:nth-child(2){
+                display:${clipboard ? 'inline-block' : 'none'};
             }
             `}</style>
             {/* <style>{addCssParent(`.module-theme-${theme}`, require(`!!raw-loader!prismjs/plugins/line-numbers/prism-line-numbers.css`).default)}</style> */}

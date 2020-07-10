@@ -8,19 +8,21 @@ import { languages } from '../../src/utils/languages'
 class App extends React.Component {
   constructor(props) {
     super(props)
-    const { lineNumber, readOnly, code, theme, language } = this.props
+    const { lineNumber, readOnly, code, theme, language, showLanguage, clipboard } = this.props
     this.state = {
       language,
       theme,
       lineNumber,
       readOnly,
+      showLanguage,
+      clipboard,
       code
     }
   }
 
 
   render() {
-    const { lineNumber, readOnly, code, theme, language } = this.state
+    const { lineNumber, readOnly, code, theme, language, showLanguage, clipboard } = this.state
     return <div style={{ padding: 20 }}>
       <div style={{ marginBottom: 10 }}>
         <span style={{ marginRight: 10 }} onClick={e => this.setState({ lineNumber: !lineNumber })} >
@@ -54,7 +56,8 @@ class App extends React.Component {
         code={code}
         lineNumber={lineNumber}
         readOnly={readOnly}
-        clipboard={true}
+        clipboard={clipboard}
+        showLanguage={showLanguage}
         changeCode={code => {
           this.code = code
           console.log(code)

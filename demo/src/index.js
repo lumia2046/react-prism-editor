@@ -23,6 +23,8 @@ ReactDOM.render(<div>
          theme='default'
          lineNumber={true}
          readOnly={true}
+         showLanguage={false}
+         clipboard={true}
          code={`import React from 'react';
 import Editor from 'react-prism-editor'
 
@@ -34,20 +36,23 @@ class App extends React.Component {
       theme:'default',
       lineNumber:true,
       readOnly:true,
+      showLanguage:true,
+      clipboard:true,
       code:''
     }
   }
 
 
   render() {
-    const { lineNumber, readOnly, code, theme, language } = this.state
+    const { lineNumber, readOnly, code, theme, language,showLanguage,clipboard } = this.state
     return <Editor
         language={language}
         theme={theme}
         code={code}
         lineNumber={lineNumber}
         readOnly={readOnly}
-        clipboard={true}
+        clipboard={clipboard}
+        showLanguage={showLanguage}
         changeCode={code => {
           this.code = code
           console.log(code)
@@ -64,6 +69,8 @@ export default App;
          theme='coy'
          lineNumber={true}
          readOnly={true}
+         showLanguage={true}
+         clipboard={true}
          code={`<?php
 // 定义变量并默认设置为空值
 $nameErr = $emailErr = $genderErr = $websiteErr = "";
