@@ -1,6 +1,6 @@
 {
   "name": "react-prism-editor",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "description": "React prism editor with theme,line-numbers,copy to dashboard",
   "main": "lib/index.js",
   "files": [
