@@ -24,7 +24,28 @@ class Editor extends React.Component {
             lineNumbersHeight: '20px',
             selection: undefined,
             codeData: '',
-            content: ''
+            content: '',
+            id: `${Math.random()}`.split('0.')[1]
+        }
+    }
+
+    getLanguage(language) {
+        if (basicLanguages.includes(language)) {
+            return language
+        } else {
+            console.warn(`Provided languages:${basicLanguages}`)
+            console.warn('Your input language is not support, use default language javascript')
+            return 'javascript'
+        }
+    }
+
+    getTheme(theme) {
+        if (basicThemes.includes(theme)) {
+            return theme
+        } else {
+            console.warn(`Provided themes:${basicThemes}`)
+            console.warn('Your input theme is not support, use default theme')
+            return 'default'
         }
     }
 
@@ -438,10 +459,12 @@ class Editor extends React.Component {
     }
 
 
+
+
     render() {
         const { language, readOnly, theme, lineNumber, clipboard, showLanguage } = this.props
-        const { content, lineNumbersHeight } = this.state
-        return <div className={`module-prism-editor-container module-theme-${theme}`}>
+        const { content, lineNumbersHeight, id } = this.state
+        return <div className={`prism-editor-${id} module-theme-${theme}`}>
             {/* {lineNumber && <div
                 className="line-numbers-container"
                 ref={ref => this.lineNumbersDom = ref}
@@ -466,6 +489,11 @@ class Editor extends React.Component {
                 autoCorrect="off"
                 data-gramm="false"
             />
+            <style>{`
+            .prism-editor-${id} .line-numbers-rows{
+                display:${lineNumber ? 'block' : 'none'};
+            }
+            `}</style>
             {/* <style>{addCssParent(`.module-theme-${theme}`, require(`!!raw-loader!prismjs/plugins/line-numbers/prism-line-numbers.css`).default)}</style> */}
             {/* <style key={theme}>{addCssParent(`.module-theme-${theme}`, themesCss[theme])}</style> */}
 

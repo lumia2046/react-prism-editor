@@ -1,6 +1,5 @@
 import React from 'react';
 import Editor from '../../src'
-// import Editor from '../disk/main'
 import { themes } from '../../src/utils/themes'
 import { languages } from '../../src/utils/languages'
 
