@@ -320,14 +320,15 @@ class Editor extends React.Component {
 
     addElement(type, name, content) {
         const domName = `${name}-${type}-dom`
-        if (this[domName] || window[domName]) {
+        if (document.querySelector(`#${domName}`)) {
+            // if (this[domName] || window[domName]) {
             return
             //script必须每次通过appendChild的方式才会重新执行，所以先要remove掉
             document.body.removeChild(this[domName])
         } else {
             this.addedDomNames.push(domName)
         }
-        window[domName] = true
+        // window[domName] = true
         this[domName] = document.createElement(type)
         this[domName].id = domName
         this[domName].innerHTML = content
