@@ -19,6 +19,7 @@
     "test:watch": "nwb test-react --server"
   },
   "dependencies": {
+    "clipboard": "^2.0.8",
     "dom-iterator": "^1.0.0",
     "escape-html": "^1.0.3",
     "prismjs": "^1.20.0",
