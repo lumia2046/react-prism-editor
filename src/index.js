@@ -4,18 +4,13 @@ import prism from "./utils/prism";
 import escapeHtml from "escape-html";
 import normalizeHtml from "./utils/normalizeHtml.js";
 import htmlToPlain from "./utils/htmlToPlain.js";
-import selectionRange from "./utils/selection-range.js";
+import { getCaretPosition, setCaretPosition } from "./utils/selection-range.js";
 import { getIndent, getDeindentLevel } from "./utils/getIndent";
 import { FORBIDDEN_KEYS } from "./utils/constant";
 import { basicThemes } from './utils/themes'
 import { basicLanguages } from './utils/languages'
 import { plugins } from './utils/plugins'
 import { themesCss, lineNumbersCss, languagesJs, pluginsJs, prismJs, addCssParent } from './getPrismSource'
-
-
-
-
-
 
 class Editor extends React.Component {
     constructor(props) {

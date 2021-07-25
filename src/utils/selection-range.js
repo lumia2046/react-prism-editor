@@ -1,11 +1,12 @@
 import iterator from "dom-iterator";
 
-function position(el, pos) {
+export const getCaretPosition = (el) => {
   if (document.activeElement !== el) return;
+
   var selection = window.getSelection();
 
-  if (1 == arguments.length) {
-    if (!selection.rangeCount) return;
+  if (!selection.rangeCount) return;
+
     var indexes = {};
     var range = selection.getRangeAt(0);
     var clone = range.cloneRange();
@@ -19,8 +20,9 @@ function position(el, pos) {
     indexes.endContainer = clone.endContainer;
     indexes.startContainer = clone.startContainer;
     return indexes;
-  }
+}
 
+export const setCaretPosition = (el, pos) => {
   var setSelection = pos.end && pos.end !== pos.start;
   var length = 0;
   // eslint-disable-next-line
@@ -66,5 +68,3 @@ function makeSelection(el, range) {
   selection.removeAllRanges();
   selection.addRange(range);
 }
-
-export default position;
