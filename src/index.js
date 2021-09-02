@@ -99,7 +99,7 @@ class Editor extends React.Component {
     }
 
     restoreStackState(offset) {
-        console.log(this.undoStack)
+        //console.log(this.undoStack)
         const { plain, selection } = this.undoStack[
             this.undoStack.length - 1 - offset
         ];
