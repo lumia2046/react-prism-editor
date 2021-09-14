@@ -61,7 +61,7 @@ import ReactPrismEditor from "react-prism-editor";
 | Name                 | Type      | Default | Options                              | Description                                      |
 | -------------------- | --------- | ------- | ------------------------------------ | ------------------------------------------------ |
 | code                 | `string`  | `""`    | -                                    |  the code                                        |
-| language             | `String`  |`"javascript"`| `json,javascript,jsx,tsx,typescript`<br>`html,vue,angular,css,sass,markup`<br>`java,php,csharp,c,cpp,sql,xml` | language of the code |
+| language             | `String`  |`"javascript"`| `json,javascript,jsx,tsx,typescript`<br>`html,vue,angular,css,sass,markup`<br>`java,php,csharp,c,cpp,sql,xml,yaml` | language of the code |
 | lineNumbers          | `Boolean` | `false` | -                                    | Whether to show line numbers or not              |
 | readonly             | `Boolean` | `false` | -                                    | Indicates if the editor is read only or not      |               
 | clipboard            | `Boolean` | `false` | -                                    | Whether to show clipboard or not                 |
