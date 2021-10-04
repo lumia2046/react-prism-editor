@@ -476,7 +476,7 @@ class Editor extends React.Component {
                 />)}
             </div>} */}
             <pre
-                className={`language-${language} line-numbers copy-to-clipboard show-language`}
+                className={`language-${language} ${lineNumber ? 'line-numbers ' : ''}copy-to-clipboard show-language`}
                 ref={ref => this.pre = ref}
                 style={{ marginTop: 0 }}
                 dangerouslySetInnerHTML={{ __html: content }}
